@@ -12,6 +12,7 @@ import 'package:vitaliq/screens/profile_screen.dart';
 import 'package:vitaliq/screens/signup_screen.dart';
 import 'package:vitaliq/screens/sleep_screen.dart';
 import 'package:vitaliq/screens/splash_screen.dart';
+import 'package:vitaliq/screens/verify_email_screen.dart';
 
 
 
@@ -27,6 +28,7 @@ class Routes {
   static const nutrition = '/nutrition';
   static const aiCoach = '/ai-coach';
   static const profile = '/profile';
+  static const verifyEmail = '/verify-email';
 }
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -37,16 +39,26 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     debugLogDiagnostics: true,
 
     redirect: (context, state) {
-      final isLoggedIn = authState.asData?.value != null;
-      final isOnAuthPage =
-          state.matchedLocation == Routes.login ||
-              state.matchedLocation == Routes.signup ||
-              state.matchedLocation == Routes.splash ||
-              state.matchedLocation == Routes.onboarding;
+      final user = authState.asData?.value;
+      final isLoggedIn = user != null;
+      final isEmailVerified = user?.emailVerified ?? false;
+      final loc = state.matchedLocation;
 
-      if (!isLoggedIn && !isOnAuthPage) return Routes.login;
-      if (isLoggedIn && isOnAuthPage &&
-          state.matchedLocation != Routes.onboarding) return Routes.main;
+      final isAuthPage = loc == Routes.login ||
+          loc == Routes.signup ||
+          loc == Routes.splash ||
+          loc == Routes.onboarding ||
+          loc == Routes.verifyEmail;
+
+      if (!isLoggedIn && !isAuthPage) return Routes.login;
+      if (isLoggedIn && !isEmailVerified && loc != Routes.verifyEmail) {
+        // Google sign-in emails are already verified
+        if (user.providerData.any((p) => p.providerId == 'google.com')) {
+          return isAuthPage ? Routes.main : null;
+        }
+        return Routes.verifyEmail;
+      }
+      if (isLoggedIn && isEmailVerified && isAuthPage) return Routes.main;
       return null;
     },
 
@@ -90,6 +102,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.profile,
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: Routes.verifyEmail,
+        builder: (context, state) => const VerifyEmailScreen(),
       ),
     ],
 

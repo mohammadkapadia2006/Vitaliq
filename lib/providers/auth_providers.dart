@@ -60,4 +60,13 @@ class AuthNotifier extends AsyncNotifier<void> {
     await GoogleSignIn.instance.signOut();
     await _auth.signOut();
   }
+  Future<void> sendEmailVerification() async {
+    await _auth.currentUser?.sendEmailVerification();
+  }
+
+  Future<void> reloadUser() async {
+    await _auth.currentUser?.reload();
+  }
+
+  bool get isEmailVerified => _auth.currentUser?.emailVerified ?? false;
 }

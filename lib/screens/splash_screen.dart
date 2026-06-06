@@ -6,7 +6,7 @@ import 'package:vitaliq/router/app_router.dart';
 
 import '../../../core/constants/app_colors.dart';
 
-import '../../../router/app_router.dart';
+
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
