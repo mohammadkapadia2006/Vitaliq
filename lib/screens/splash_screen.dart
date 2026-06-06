@@ -55,7 +55,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 borderRadius: BorderRadius.circular(24),
               ),
               child: const Icon(
-                Icons.run_circle,
+                Icons.bolt_rounded,
                 color: AppColors.primary,
                 size: 56,
               ),
