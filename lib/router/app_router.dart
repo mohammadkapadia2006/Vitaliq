@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -41,7 +42,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final user = authState.asData?.value;
       final isLoggedIn = user != null;
-      final isEmailVerified = user?.emailVerified ?? false;
+      final isEmailVerified = FirebaseAuth.instance.currentUser?.emailVerified ?? false;
       final loc = state.matchedLocation;
 
       final isAuthPage = loc == Routes.login ||

@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:vitaliq/core/constants/app_colors.dart';
 import 'package:vitaliq/providers/auth_providers.dart';
+import 'package:vitaliq/router/app_router.dart';
 
 class VerifyEmailScreen extends ConsumerStatefulWidget {
   const VerifyEmailScreen({super.key});
@@ -22,9 +24,14 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
     ref.read(authNotifierProvider.notifier).sendEmailVerification();
     // Poll every 3 seconds to check if verified
     _timer = Timer.periodic(const Duration(seconds: 3), (_) async {
+      print('⏱ Timer fired - checking verification...');
       await ref.read(authNotifierProvider.notifier).reloadUser();
-      if (ref.read(authNotifierProvider.notifier).isEmailVerified) {
+      final verified = ref.read(authNotifierProvider.notifier).isEmailVerified;
+      print('✅ Email verified: $verified');
+      if (verified) {
         _timer?.cancel();
+        print('🚀 Navigating to main...');
+        if (mounted) context.go(Routes.main);
       }
     });
   }

@@ -66,6 +66,8 @@ class AuthNotifier extends AsyncNotifier<void> {
 
   Future<void> reloadUser() async {
     await _auth.currentUser?.reload();
+    // Force auth state to refresh
+    await _auth.currentUser?.getIdToken(true);
   }
 
   bool get isEmailVerified => _auth.currentUser?.emailVerified ?? false;
