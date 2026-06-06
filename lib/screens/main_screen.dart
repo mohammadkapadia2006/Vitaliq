@@ -21,9 +21,7 @@ class MainScreen extends ConsumerWidget {
     final screens = [
       const DashboardScreen(),
       const WorkoutScreen(),
-      const SleepScreen(),
       const NutritionScreen(),
-      const AiChatScreen(),
       const ProfileScreen(),
     ];
 
@@ -50,21 +48,13 @@ class MainScreen extends ConsumerWidget {
             selectedIcon: Icon(Icons.fitness_center, color: AppColors.primary),
             label: 'Workout',
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.bedtime_outlined),
-            selectedIcon: Icon(Icons.bedtime, color: AppColors.primary),
-            label: 'Sleep',
-          ),
+
           NavigationDestination(
             icon: const Icon(Icons.restaurant_outlined),
             selectedIcon: Icon(Icons.restaurant, color: AppColors.primary),
             label: 'Nutrition',
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.smart_toy_outlined),
-            selectedIcon: Icon(Icons.smart_toy, color: AppColors.primary),
-            label: 'AI Coach',
-          ),
+
           NavigationDestination(
             icon: const Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person, color: AppColors.primary),

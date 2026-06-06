@@ -14,6 +14,7 @@ import 'package:vitaliq/screens/signup_screen.dart';
 import 'package:vitaliq/screens/sleep_screen.dart';
 import 'package:vitaliq/screens/splash_screen.dart';
 import 'package:vitaliq/screens/verify_email_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 
 
@@ -39,7 +40,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: Routes.splash,
     debugLogDiagnostics: true,
 
-    redirect: (context, state) {
+    redirect: (context, state) async {
       final user = authState.asData?.value;
       final isLoggedIn = user != null;
       final isEmailVerified = FirebaseAuth.instance.currentUser?.emailVerified ?? false;
@@ -52,14 +53,30 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           loc == Routes.verifyEmail;
 
       if (!isLoggedIn && !isAuthPage) return Routes.login;
+
       if (isLoggedIn && !isEmailVerified && loc != Routes.verifyEmail) {
-        // Google sign-in emails are already verified
         if (user.providerData.any((p) => p.providerId == 'google.com')) {
-          return isAuthPage ? Routes.main : null;
+          // Google users — check onboarding
+          final doc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
+          final onboardingDone = doc.exists && (doc.data()?['onboardingComplete'] ?? false);
+          return isAuthPage ? (onboardingDone ? Routes.main : Routes.onboarding) : null;
         }
         return Routes.verifyEmail;
       }
-      if (isLoggedIn && isEmailVerified && isAuthPage) return Routes.main;
+
+      if (isLoggedIn && isEmailVerified && isAuthPage && loc != Routes.onboarding) {
+        // Check if onboarding is complete
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+        final onboardingDone = doc.exists && (doc.data()?['onboardingComplete'] ?? false);
+        return onboardingDone ? Routes.main : Routes.onboarding;
+      }
+
       return null;
     },
 

@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -20,18 +22,23 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
   @override
   void initState() {
     super.initState();
-    // Send verification email on screen load
     ref.read(authNotifierProvider.notifier).sendEmailVerification();
-    // Poll every 3 seconds to check if verified
-    _timer = Timer.periodic(const Duration(seconds: 3), (_) async {
-      print('⏱ Timer fired - checking verification...');
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) async {
       await ref.read(authNotifierProvider.notifier).reloadUser();
       final verified = ref.read(authNotifierProvider.notifier).isEmailVerified;
-      print('✅ Email verified: $verified');
       if (verified) {
         _timer?.cancel();
-        print('🚀 Navigating to main...');
-        if (mounted) context.go(Routes.main);
+        if (!mounted) return;
+        final uid = FirebaseAuth.instance.currentUser!.uid;
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .get();
+        final onboardingDone =
+            doc.exists && (doc.data()?['onboardingComplete'] ?? false);
+        if (mounted) {
+          context.go(onboardingDone ? Routes.main : Routes.onboarding);
+        }
       }
     });
   }

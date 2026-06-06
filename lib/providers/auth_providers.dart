@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // ── Auth State Stream ──
 final authStateProvider = StreamProvider<User?>((ref) {
@@ -13,6 +14,17 @@ final currentUserProvider = Provider<User?>((ref) {
 
 final isLoggedInProvider = Provider<bool>((ref) {
   return ref.watch(currentUserProvider) != null;
+});
+
+// ── Onboarding Check ──
+final onboardingCompleteProvider = FutureProvider<bool>((ref) async {
+  final user = ref.watch(currentUserProvider);
+  if (user == null) return false;
+  final doc = await FirebaseFirestore.instance
+      .collection('users')
+      .doc(user.uid)
+      .get();
+  return doc.exists && (doc.data()?['onboardingComplete'] ?? false);
 });
 
 // ── Auth Notifier ──
@@ -60,13 +72,13 @@ class AuthNotifier extends AsyncNotifier<void> {
     await GoogleSignIn.instance.signOut();
     await _auth.signOut();
   }
+
   Future<void> sendEmailVerification() async {
     await _auth.currentUser?.sendEmailVerification();
   }
 
   Future<void> reloadUser() async {
     await _auth.currentUser?.reload();
-    // Force auth state to refresh
     await _auth.currentUser?.getIdToken(true);
   }
 
